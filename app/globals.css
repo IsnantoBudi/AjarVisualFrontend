@@ -1,0 +1,231 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #005caa;
+  --color-primary-light: #5aa2ff;
+  --color-primary-brand: #1976D2;
+  --color-secondary: #FFC107;
+  --color-tertiary: #4CAF50;
+  --color-bg: #f5f6f7;
+  --color-surface: #ffffff;
+  --color-surface-low: #eff1f2;
+  --color-surface-container: #e6e8ea;
+  --color-on-surface: #2c2f30;
+  --color-on-surface-variant: #595c5d;
+  --font-headline: var(--font-headline, "Plus Jakarta Sans", sans-serif);
+  --font-body: var(--font-body, "Be Vietnam Pro", sans-serif);
+}
+
+body {
+  font-family: var(--font-body), "Be Vietnam Pro", sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-on-surface);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-headline), "Plus Jakarta Sans", sans-serif;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+  border-radius: 9999px;
+  padding: 0.875rem 2rem;
+  font-family: var(--font-headline);
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+  /* Gamified drop shadow (bottom edge) */
+  box-shadow: 0 6px 0 0 #004683;
+}
+
+.btn-primary:hover {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 0 #004683;
+}
+
+.btn-primary:active {
+  transform: translateY(6px);
+  box-shadow: 0 0 0 0 #004683;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: white;
+  border: 2px solid #e1e4e8;
+  color: var(--color-on-surface);
+  border-radius: 9999px;
+  padding: 0.75rem 1.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 24px rgba(44, 47, 48, 0.06);
+}
+
+.card-xl {
+  background: white;
+  border-radius: 2rem;
+  padding: 2rem;
+  box-shadow: 0 8px 40px rgba(44, 47, 48, 0.08);
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(171, 173, 174, 0.15);
+}
+
+.gradient-hero {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+}
+
+.input-field {
+  background: #dadddf;
+  border: 2px solid transparent;
+  border-radius: 1rem;
+  padding: 0.875rem 1.25rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  width: 100%;
+  transition: all 0.2s ease;
+  outline: none;
+  color: var(--color-on-surface);
+}
+
+.input-field:focus {
+  background: white;
+  border-color: var(--color-primary-light);
+  box-shadow: 0 0 0 3px rgba(90, 162, 255, 0.15);
+}
+
+.chip-correct {
+  background: #91f78e;
+  color: #005e17;
+  border-radius: 1.5rem;
+  padding: 0.25rem 0.875rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ── Matching Question Styles ─────────────────────────────────── */
+.matching-section {
+  width: 100%;
+}
+
+.matching-row {
+  display: grid;
+  grid-template-columns: 1fr 28px 28px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.matching-box {
+  border-radius: 12px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: default;
+}
+
+.matching-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Print overrides for matching ─────────────────────────────── */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; color: black; }
+  main { padding: 0 !important; margin: 0 !important; }
+  .card-xl, .question-card, .card {
+    page-break-inside: avoid;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin-bottom: 2rem !important;
+    border-radius: 0 !important;
+  }
+  .print-option {
+    background: transparent !important;
+    border: none !important;
+    padding: 0.25rem 0 !important;
+    color: black !important;
+  }
+  .matching-box {
+    transform: none !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    min-height: 44px !important;
+  }
+  .matching-box:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .print-number {
+    background: transparent !important;
+    color: black !important;
+    width: auto !important;
+    height: auto !important;
+    font-size: 12pt !important;
+    margin-right: 4pt !important;
+  }
+  .question-image {
+    max-width: 150pt;
+    max-height: 150pt;
+    border-radius: 4px !important;
+  }
+}
+
+@keyframes bloom {
+  0% { transform: scale(0.6); opacity: 0.4; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.bloom-dot {
+  animation: bloom 1.2s ease-in-out infinite;
+}
+.bloom-dot:nth-child(2) { animation-delay: 0.2s; }
+.bloom-dot:nth-child(3) { animation-delay: 0.4s; }
+.bloom-dot:nth-child(4) { animation-delay: 0.6s; }
+.bloom-dot:nth-child(5) { animation-delay: 0.8s; }
+
+/* ── Skeleton shimmer ─────────────────────────────────────────── */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.img-skeleton {
+  background: linear-gradient(90deg, #e8eaed 25%, #f5f6f7 50%, #e8eaed 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite ease-in-out;
+}
+
+@media print {
+  .img-skeleton { display: none !important; }
+}
+
