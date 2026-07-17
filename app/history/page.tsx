@@ -6,9 +6,7 @@ import NavBar from "@/components/NavBar";
 import { getHistory, deleteWorksheet, Worksheet, Soal } from "@/lib/api";
 import {
   Plus, AlertTriangle, Inbox, Eye, Printer, Trash2, Loader2,
-  ListChecks, Shuffle, BookText, Divide, FlaskConical, Globe2,
-  Music, Palette, Apple, Calculator, Leaf, Map, Atom, HeartPulse,
-  Star, Landmark, Languages, Pencil,
+  ListChecks, Shuffle, BookText, Pencil,
 } from "lucide-react";
 
 // ── Derive question types from data_soal ────────────────────────────────────
@@ -160,19 +158,19 @@ export default function HistoryPage() {
   return (
     <>
       <NavBar />
-      <main className="min-h-screen py-8 px-6" style={{ paddingTop: "100px" }}>
+      <main className="min-h-screen py-8 px-4 sm:px-6" style={{ paddingTop: "100px" }}>
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
             <div>
-              <h1 className="text-4xl font-black mb-2" style={{ fontFamily: "var(--font-headline)" }}>
+              <h1 className="text-3xl sm:text-4xl font-black mb-2" style={{ fontFamily: "var(--font-headline)" }}>
                 Riwayat Lembar Soal
               </h1>
               <p style={{ color: "var(--color-on-surface-variant)" }}>
                 {worksheets.length} worksheet tersimpan di TiDB Cloud
               </p>
             </div>
-            <Link href="/generate" className="btn-primary flex items-center gap-2 no-underline inline-block py-3 px-6">
+            <Link href="/generate" className="btn-primary inline-flex items-center justify-center gap-2 no-underline py-3 px-6 w-full md:w-auto">
               <Plus className="w-5 h-5" /> Buat Soal Baru
             </Link>
           </div>
@@ -254,13 +252,13 @@ export default function HistoryPage() {
                     <div className="flex gap-2 mt-auto">
                       <button
                         onClick={() => handleView(ws)}
-                        className="btn-primary flex items-center justify-center gap-2 flex-1 py-2.5 text-sm"
+                        className="btn-primary flex items-center justify-center gap-2 flex-1 py-3 text-sm"
                       >
                         <Eye className="w-4 h-4" /> Lihat
                       </button>
                       <button
                         onClick={() => handlePrint(ws)}
-                        className="btn-secondary flex items-center justify-center py-2.5 px-4 text-sm"
+                        className="btn-secondary flex items-center justify-center py-3 px-4 text-sm"
                         title="Cetak"
                       >
                         <Printer className="w-5 h-5 opacity-80" />
@@ -268,8 +266,8 @@ export default function HistoryPage() {
                       <button
                         onClick={() => handleDelete(ws.id)}
                         disabled={deleting === ws.id}
-                        className="flex items-center justify-center py-2.5 px-4 rounded-full text-sm font-semibold transition-all"
-                        style={{ background: "#ffefee", color: "#b31b25" }}
+                        className="flex items-center justify-center py-3 px-4 rounded-full text-sm font-semibold transition-all"
+                        style={{ background: "#ffefee", color: "#b31b25", minHeight: "44px", minWidth: "44px" }}
                       >
                         {deleting === ws.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
                       </button>

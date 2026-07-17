@@ -182,19 +182,19 @@ export default function PlayPage() {
       </div>
 
       {/* Header Bar */}
-      <div className="bg-white/80 backdrop-blur-md px-6 py-4 flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.03)] border-b border-gray-100 z-10 sticky top-0">
+      <div className="bg-white/80 backdrop-blur-md px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.03)] border-b border-gray-100 z-10 sticky top-0">
         <button onClick={() => router.push("/history")} className="p-2 hover:bg-gray-100 rounded-full transition-colors font-bold text-gray-500 flex items-center gap-2">
           <ArrowLeft className="w-5 h-5 text-gray-600" />
           <span className="hidden md:inline">Tutup</span>
         </button>
 
-        <div className="flex-1 max-w-md mx-6">
+        <div className="flex-1 max-w-md mx-2 sm:mx-6">
           <div className="flex justify-between items-end mb-1">
-             <span className="text-xs font-black text-gray-400 uppercase tracking-wider">Pertanyaan {Math.min(currentIndex + 1, playItems.length)} / {playItems.length}</span>
+             <span className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-wider">Pertanyaan {Math.min(currentIndex + 1, playItems.length)} / {playItems.length}</span>
              {streak >= 3 && (
                 <div className="flex items-center gap-1 text-orange-600 flex-shrink-0">
                   <Flame className="w-4 h-4 fill-orange-500 animate-pulse" />
-                  <span className="text-xs font-black italic">{streak}x Beruntun!</span>
+                  <span className="text-[10px] sm:text-xs font-black italic">{streak}x Beruntun!</span>
                 </div>
              )}
           </div>
@@ -208,18 +208,18 @@ export default function PlayPage() {
           </div>
         </div>
 
-        <div className="font-black text-blue-600 bg-blue-50 px-4 py-2 rounded-full flex gap-1.5 items-center flex-shrink-0 border border-blue-100 shadow-sm">
+        <div className="font-black text-blue-600 bg-blue-50 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full flex gap-1 items-center flex-shrink-0 border border-blue-100 shadow-sm">
           <Star className="w-4 h-4 fill-yellow-400 text-yellow-500 drop-shadow-sm" />
-          <span className="text-sm">{score}</span>
+          <span className="text-xs sm:text-sm">{score}</span>
         </div>
       </div>
 
       {/* Main Play Area */}
-      <div className="flex-1 overflow-y-auto py-8 px-4 flex flex-col items-center justify-center z-10">
+      <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col items-center justify-center z-10">
         <div className={`w-full max-w-2xl ${shake ? 'animate-[shake_0.4s_ease-in-out]' : ''}`}>
 
           {/* Question Card */}
-          <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl border border-gray-100 mb-6 text-center relative overflow-hidden group">
+          <div className="bg-white rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-xl border border-gray-100 mb-6 text-center relative overflow-hidden group">
             {isAnswered && (
                <div className="absolute top-4 right-6 text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
                  Hanya Meninjau Ulang
@@ -305,7 +305,7 @@ export default function PlayPage() {
                   value={isAnswered ? currentAnswerRecord.answer : isianInput}
                   onChange={(e) => setIsianInput(e.target.value)}
                   placeholder="Ketik jawaban kamu..."
-                  className={`w-full text-center text-xl md:text-2xl font-black p-6 rounded-3xl border-[3px] transition-all focus:outline-none focus:ring-4 focus:ring-blue-100 ${
+                  className={`w-full text-center text-xl md:text-2xl font-black p-4 sm:p-6 rounded-3xl border-[3px] transition-all focus:outline-none focus:ring-4 focus:ring-blue-100 ${
                     isAnswered
                     ? (currentAnswerRecord.isCorrect ? "bg-green-50 border-green-400 text-green-700" : "bg-red-50 border-red-400 text-red-700")
                     : "bg-white border-blue-200 text-slate-700 focus:border-blue-500 shadow-sm"
@@ -368,7 +368,7 @@ export default function PlayPage() {
                   key={i}
                   disabled={isAnswered}
                   onClick={() => handleAnswer(rightItem.kanan, isCorrect)}
-                  className={`relative p-5 rounded-3xl flex items-center justify-center font-bold text-lg min-h-[110px] transition-all duration-200 ${bgClass} ${textClass} ${!isAnswered && 'hover:-translate-y-1 hover:shadow-[0_6px_0_0_#94a3b8] active:translate-y-1'}`}
+                  className={`relative p-4 sm:p-5 rounded-3xl flex items-center justify-center font-bold text-lg min-h-[80px] sm:min-h-[110px] transition-all duration-200 ${bgClass} ${textClass} ${!isAnswered && 'hover:-translate-y-1 hover:shadow-[0_6px_0_0_#94a3b8] active:translate-y-1'}`}
                 >
                   {rightItem.kanan_is_image && rightItem.kanan_url ? (
                     <img src={rightItem.kanan_url} alt="Opsi Kanan" className="w-20 h-20 object-contain rounded-lg" />

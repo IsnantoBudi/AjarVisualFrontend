@@ -49,19 +49,12 @@ function MatchingBox({
 
   return (
     <div
-      className="matching-box flex items-center justify-center rounded-xl text-center"
+      className="matching-box flex items-center justify-center rounded-xl text-center p-2 sm:p-3.5 text-xs sm:text-sm font-bold text-gray-900 break-words relative overflow-hidden"
       style={{
         border: `2px solid ${borderColor}`,
         background: bgColor,
-        minHeight: isImage ? "82px" : "50px",
-        padding: isImage ? "6px" : "8px 14px",
+        minHeight: isImage ? "82px" : "48px",
         fontFamily: "var(--font-headline)",
-        fontWeight: 700,
-        fontSize: "0.92rem",
-        color: "#1a1a1a",
-        wordBreak: "break-word",
-        position: "relative",
-        overflow: "hidden",
       }}
     >
       {isImage && imageUrl && !imgError ? (
@@ -137,20 +130,19 @@ function MatchingSection({ pairs, showKey }: { pairs: MatchingPair[], showKey?: 
 
   return (
     <div className="matching-section w-full" style={{ marginTop: "12px" }}>
-      <div style={{ display: "grid", gap: "10px" }}>
+      <div className="grid gap-2.5">
         {pairs.map((pair, i) => {
           const rightItem = showKey ? pair : (shuffledRights[i] || pair);
           return (
             <div
               key={i}
-              className="matching-row"
-              style={{ display: "grid", gridTemplateColumns: "1fr 28px 28px 1fr", alignItems: "center", gap: "8px" }}
+              className="grid grid-cols-[1fr_20px_20px_1fr] sm:grid-cols-[1fr_28px_28px_1fr] items-center gap-1.5 sm:gap-2"
             >
               <MatchingBox content={pair.kiri} isImage={pair.kiri_is_image} imageUrl={pair.kiri_url} side="left" />
-              <div style={{ display: "flex", justifyContent: "center" }}>
+              <div className="flex justify-center">
                 <Dot color="#22c55e" />
               </div>
-              <div style={{ display: "flex", justifyContent: "center" }}>
+              <div className="flex justify-center">
                 <Dot color="#3b82f6" />
               </div>
               <MatchingBox content={rightItem.kanan} isImage={rightItem.kanan_is_image} imageUrl={rightItem.kanan_url} side="right" />
@@ -166,18 +158,17 @@ function MatchingSection({ pairs, showKey }: { pairs: MatchingPair[], showKey?: 
 function LegacyMatchingSection({ pasangan }: { pasangan: Record<string, string> }) {
   return (
     <div className="matching-section w-full" style={{ marginTop: "12px" }}>
-      <div style={{ display: "grid", gap: "10px" }}>
+      <div className="grid gap-2.5">
         {Object.entries(pasangan).map(([kiri, kanan], i) => (
           <div
             key={i}
-            className="matching-row"
-            style={{ display: "grid", gridTemplateColumns: "1fr 28px 28px 1fr", alignItems: "center", gap: "8px" }}
+            className="grid grid-cols-[1fr_20px_20px_1fr] sm:grid-cols-[1fr_28px_28px_1fr] items-center gap-1.5 sm:gap-2"
           >
             <MatchingBox content={kiri} side="left" />
-            <div style={{ display: "flex", justifyContent: "center" }}>
+            <div className="flex justify-center">
               <Dot color="#22c55e" />
             </div>
-            <div style={{ display: "flex", justifyContent: "center" }}>
+            <div className="flex justify-center">
               <Dot color="#3b82f6" />
             </div>
             <MatchingBox content={kanan} side="right" />
@@ -366,7 +357,7 @@ export default function QuestionCard({ soal, index, onImageChange, showKey }: Pr
   const hasPairs = finalPairs.length > 0;
 
   return (
-    <div className="card-xl question-card print:mb-6">
+    <div className="card-xl question-card print:mb-6 p-5 sm:p-8">
       {/* ── Header ── */}
       <div className="flex items-start gap-3 mb-4 print:mb-2">
         <div
@@ -386,12 +377,14 @@ export default function QuestionCard({ soal, index, onImageChange, showKey }: Pr
       {/* ── Illustration for choices/isian WITH image ── */}
       {!isMatching && !soal.tanpa_gambar && (
         <div className="flex flex-col md:flex-row gap-6 mb-6 print:gap-4 print:mb-2">
-          <QuestionImage
-            imgUrl={soal.image_url}
-            index={index}
-            imagePrompt={soal.image_prompt}
-            onImageChange={onImageChange}
-          />
+          <div className="flex justify-center md:block flex-shrink-0">
+            <QuestionImage
+              imgUrl={soal.image_url}
+              index={index}
+              imagePrompt={soal.image_prompt}
+              onImageChange={onImageChange}
+            />
+          </div>
 
           {/* Multiple choice options */}
           {isPilihan && (

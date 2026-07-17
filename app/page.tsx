@@ -40,21 +40,21 @@ export default function Home() {
       <main className="bg-[#f8fafc] overflow-hidden" style={{ paddingTop: "72px" }}>
         
         {/* ── HERO SECTION (Playful & Clean) ──────────────────────────────────────── */}
-        <section className="relative py-20 px-6 md:py-32 flex flex-col items-center text-center">
-          {/* Floating decorative elements */}
-          <div className="absolute top-20 left-[10%] animate-[float_5s_ease-in-out_infinite]">
+        <section className="relative py-12 px-4 sm:px-6 md:py-32 flex flex-col items-center text-center">
+          {/* Floating decorative elements (hidden on mobile to prevent clutter & overflow) */}
+          <div className="hidden md:block absolute top-20 left-[10%] animate-[float_5s_ease-in-out_infinite]">
             <div className="w-16 h-16 bg-[#FFC107] rounded-3xl rotate-12 shadow-lg flex items-center justify-center text-2xl">✨</div>
           </div>
-          <div className="absolute bottom-32 right-[15%] animate-[float_7s_ease-in-out_infinite_reverse]">
+          <div className="hidden md:block absolute bottom-32 right-[15%] animate-[float_7s_ease-in-out_infinite_reverse]">
             <div className="w-20 h-20 bg-[#4CAF50] rounded-full shadow-lg flex items-center justify-center text-4xl">📚</div>
           </div>
-          <div className="absolute top-40 right-[10%] animate-[float_6s_ease-in-out_infinite]">
+          <div className="hidden md:block absolute top-40 right-[10%] animate-[float_6s_ease-in-out_infinite]">
             <div className="w-14 h-14 bg-pink-400 rounded-2xl -rotate-12 shadow-lg flex items-center justify-center text-xl">🎨</div>
           </div>
 
           <div className="max-w-4xl mx-auto relative z-10">
             {/* Tech Stack Banner for Portfolio Demo */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold mb-8 bg-white shadow-sm border border-gray-100 text-gray-500">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold mb-6 md:mb-8 bg-white shadow-sm border border-gray-100 text-gray-500">
               <span className="flex items-center gap-1 text-blue-600"><Zap className="w-3.5 h-3.5" /> Next.js & Go</span>
               <span className="text-gray-300">•</span>
               <span>Gemini AI</span>
@@ -62,47 +62,47 @@ export default function Home() {
               <span>TiDB</span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-[1.15] text-[#1e293b]" style={{ fontFamily: "var(--font-headline)" }}>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-6 leading-[1.15] text-[#1e293b]" style={{ fontFamily: "var(--font-headline)" }}>
               Bikin Soal Belajar <br className="hidden md:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
                 Jadi Menyenangkan!
               </span>
             </h1>
             
-            <p className="text-xl md:text-2xl mb-10 text-gray-500 leading-relaxed max-w-2xl mx-auto font-medium">
+            <p className="text-lg md:text-2xl mb-10 text-gray-500 leading-relaxed max-w-2xl mx-auto font-medium">
               Alat bantu AI buat guru dan orang tua untuk menyusun lembar kerja visual dengan otomatis. <strong className="text-gray-700">Langsung klik, tanpa perlu daftar akun!</strong>
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
-              <Link href="/generate" className="btn-primary flex items-center justify-center gap-2 text-lg py-4 px-10">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center w-full max-w-md mx-auto sm:max-w-none">
+              <Link href="/generate" className="btn-primary flex items-center justify-center gap-2 text-base md:text-lg py-4 px-8 md:px-10 w-full sm:w-auto">
                 <ArrowRight className="w-5 h-5" /> Coba Sekarang (Tanpa Login)
               </Link>
-              <Link href="/history" className="btn-secondary flex items-center justify-center gap-2 text-lg py-4 px-10">
+              <Link href="/history" className="btn-secondary flex items-center justify-center gap-2 text-base md:text-lg py-4 px-8 md:px-10 w-full sm:w-auto">
                 <PlayCircle className="w-5 h-5 text-gray-400" /> Lihat Hasilnya
               </Link>
             </div>
             
-            <div className="mt-6 flex items-center justify-center gap-2 text-sm font-semibold text-gray-400">
+            <div className="mt-6 flex items-center justify-center gap-2 text-xs md:text-sm font-semibold text-gray-400">
               <ShieldCheck className="w-4 h-4 text-green-500" /> 100% Gratis & Langsung Bisa Dipakai
             </div>
           </div>
         </section>
 
         {/* ── BENTO GRID FEATURES ─────────────────────────────────────────────────── */}
-        <section className="py-24 px-6 bg-white rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.03)] z-20 relative">
+        <section className="py-16 px-4 sm:px-6 bg-white rounded-t-[2.5rem] md:rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.03)] z-20 relative">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-black mb-4 text-[#1e293b]" style={{ fontFamily: "var(--font-headline)" }}>
+            <div className="text-center mb-12 md:mb-16">
+              <h2 className="text-3xl md:text-5xl font-black mb-4 text-[#1e293b]" style={{ fontFamily: "var(--font-headline)" }}>
                 Kenapa Pakai AjarVisual?
               </h2>
-              <p className="text-xl text-gray-500 font-medium">Semua udah diatur rapi biar kamu gampang pakainya.</p>
+              <p className="text-lg md:text-xl text-gray-500 font-medium">Semua udah diatur rapi biar kamu gampang pakainya.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {bentoFeatures.map((f, i) => (
                 <div 
                   key={i} 
-                  className={`rounded-[2.5rem] p-8 lg:p-12 transition-transform duration-300 hover:-translate-y-2 ${f.colSpan}`}
+                  className={`rounded-[2.5rem] p-6 sm:p-8 lg:p-12 transition-transform duration-300 hover:-translate-y-2 ${f.colSpan}`}
                   style={{ backgroundColor: f.bgColor }}
                 >
                   <div className="mb-6 bg-white/60 w-20 h-20 rounded-3xl flex items-center justify-center shadow-sm">

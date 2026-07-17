@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from "@/components/NavBar";
 import ProgressBloom from "@/components/ProgressBloom";
-import { generateWorksheet, Worksheet } from "@/lib/api";
+import { generateWorksheet } from "@/lib/api";
 import { Sparkles, BookOpen, GraduationCap, ListOrdered, Clock, AlertTriangle, Wand2 } from "lucide-react";
 
 export default function GeneratePage() {
@@ -14,6 +14,7 @@ export default function GeneratePage() {
   const [isCustomJumlah, setIsCustomJumlah] = useState(false);
   const [tipeSoal, setTipeSoal] = useState("pilihan_ganda");
   const [tanpaGambar, setTanpaGambar] = useState(false);
+  const [model, setModel] = useState("gemma4");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -33,9 +34,10 @@ export default function GeneratePage() {
     setError("");
     setLoading(true);
     try {
-      const result = await generateWorksheet({ topik, kelas, jumlah_soal: jumlahSoal, tipe_soal: tipeSoal, tanpa_gambar: tanpaGambar });
+      const result = await generateWorksheet({ topik, kelas, jumlah_soal: jumlahSoal, tipe_soal: tipeSoal, tanpa_gambar: tanpaGambar, model });
       // Store result in sessionStorage for preview page
       sessionStorage.setItem("currentWorksheet", JSON.stringify(result.worksheet));
+      sessionStorage.setItem("selectedModel", model);
       router.push("/preview");
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan. Coba lagi.");
@@ -62,7 +64,7 @@ export default function GeneratePage() {
   return (
     <>
       <NavBar />
-      <main className="min-h-screen py-12 px-6 relative overflow-hidden flex flex-col justify-center" style={{ paddingTop: "100px" }}>
+      <main className="min-h-screen py-8 px-4 sm:py-12 sm:px-6 relative overflow-hidden flex flex-col justify-center" style={{ paddingTop: "100px" }}>
         
         {/* Decorative Gamified Background */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-[#f8fafc] opacity-60" style={{ backgroundImage: "radial-gradient(#94a3b8 1.5px, transparent 1.5px)", backgroundSize: "32px 32px" }}>
@@ -74,16 +76,16 @@ export default function GeneratePage() {
         <div className="max-w-2xl mx-auto w-full z-10">
           {/* Header */}
           <div className="mb-8 text-center md:text-left">
-            <h1 className="text-4xl md:text-5xl font-black mb-3 text-[#1e293b] leading-tight flex items-center justify-center md:justify-start gap-4 drop-shadow-sm" style={{ fontFamily: "var(--font-headline)" }}>
-              Buat Lembar Soal <Sparkles className="w-10 h-10 text-yellow-400 fill-yellow-100 drop-shadow-md animate-pulse" />
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 text-[#1e293b] leading-tight flex flex-wrap items-center justify-center md:justify-start gap-3 drop-shadow-sm" style={{ fontFamily: "var(--font-headline)" }}>
+              Buat Lembar Soal <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-yellow-400 fill-yellow-100 drop-shadow-md animate-pulse" />
             </h1>
-            <p className="text-gray-500 font-medium text-lg">
+            <p className="text-gray-500 font-medium text-base md:text-lg">
               Sihir topik materi apapun menjadi petualangan visual interaktif!
             </p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-white rounded-[2rem] p-8 md:p-10 shadow-[0_8px_40px_rgba(0,0,0,0.04)] border border-gray-100 mb-6">
+          <div className="bg-white rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-[0_8px_40px_rgba(0,0,0,0.04)] border border-gray-100 mb-6">
             
             {/* Topik */}
             <div className="mb-8">
@@ -192,6 +194,36 @@ export default function GeneratePage() {
               </div>
             </div>
 
+            {/* Model Selection */}
+            <div className="mb-8 pt-4 border-t border-gray-100">
+              <label className="flex items-center gap-2 font-bold mb-3 text-sm" style={{ fontFamily: "var(--font-headline)" }}>
+                <Sparkles className="w-4 h-4 text-blue-600" /> MODEL GENERATOR AI
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer border-2 transition-all group ${model === 'gemma4' ? 'border-blue-500 bg-blue-50/50' : 'border-gray-100 bg-white hover:border-gray-300'}`}>
+                  <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0 mt-0.5">
+                     <input type="radio" name="modelAi" value="gemma4" checked={model === "gemma4"} onChange={(e) => setModel(e.target.value)} className="peer absolute w-full h-full opacity-0 cursor-pointer" />
+                     <div className="w-full h-full rounded-full border-2 border-gray-300 peer-checked:border-blue-600 peer-checked:border-[6px] transition-all"></div>
+                  </div>
+                  <div className="flex flex-col items-start gap-0.5">
+                    <span className="font-bold text-gray-700 leading-tight">Ollama Gemma 4</span>
+                    <span className="text-[10px] text-gray-400 font-medium">Model handal & aman untuk pemahaman edukasi</span>
+                  </div>
+                </label>
+
+                <label className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer border-2 transition-all group ${model === 'minimax-m2.5' ? 'border-blue-500 bg-blue-50/50' : 'border-gray-100 bg-white hover:border-gray-300'}`}>
+                  <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0 mt-0.5">
+                     <input type="radio" name="modelAi" value="minimax-m2.5" checked={model === "minimax-m2.5"} onChange={(e) => setModel(e.target.value)} className="peer absolute w-full h-full opacity-0 cursor-pointer" />
+                     <div className="w-full h-full rounded-full border-2 border-gray-300 peer-checked:border-blue-600 peer-checked:border-[6px] transition-all"></div>
+                  </div>
+                  <div className="flex flex-col items-start gap-0.5">
+                    <span className="font-bold text-gray-700 leading-tight">Ollama MiniMax M2.5</span>
+                    <span className="text-[10px] text-gray-400 font-medium">Pemrosesan super cepat & gaya kreatif</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             {/* Tipe Soal & Mode Gambar */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 pt-4 border-t border-gray-100">
               <div>
@@ -244,11 +276,11 @@ export default function GeneratePage() {
                   <Sparkles className="w-4 h-4 text-pink-500" /> MODE GAMBAR
                 </label>
                 <label className="flex items-center justify-between p-5 rounded-2xl cursor-pointer border-2 transition-all bg-white" style={{ borderColor: !tanpaGambar ? "#bfdbfe" : "#f1f5f9", boxShadow: !tanpaGambar ? "0 4px 14px rgba(37,99,235,0.08)" : "none" }}>
-                  <div>
+                  <div className="flex-1 pr-3">
                     <div className={`font-black text-sm ${!tanpaGambar ? 'text-blue-700' : 'text-gray-500'}`}>AI Ilustrasi Otomatis</div>
-                    <div className="text-xs text-gray-400 mt-1 font-medium leading-relaxed max-w-[140px]">Menggenerasi visual HD untuk tiap pertanyaan.</div>
+                    <div className="text-xs text-gray-400 mt-1 font-medium leading-relaxed max-w-[200px] xs:max-w-none">Menggenerasi visual HD untuk tiap pertanyaan.</div>
                   </div>
-                  <div className="relative inline-block w-14 mr-0 align-middle select-none transition duration-200 ease-in">
+                  <div className="relative inline-block w-14 mr-0 align-middle select-none transition duration-200 ease-in flex-shrink-0">
                     <input type="checkbox" checked={!tanpaGambar} onChange={(e) => setTanpaGambar(!e.target.checked)} className="toggle-checkbox absolute block w-7 h-7 rounded-full bg-white border-[3px] border-gray-200 appearance-none cursor-pointer shadow-sm z-10" style={{ left: !tanpaGambar ? "1.75rem" : "0", borderColor: !tanpaGambar ? "#2563eb" : "#cbd5e1", transition: "all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)" }}/>
                     <div className="toggle-label block overflow-hidden h-7 rounded-full bg-gray-200 cursor-pointer" style={{ background: !tanpaGambar ? "#93c5fd" : "#e2e8f0", transition: "all 0.3s" }}></div>
                   </div>

@@ -37,6 +37,7 @@ export interface GenerateRequest {
   jumlah_soal: number;
   tipe_soal?: string;
   tanpa_gambar?: boolean;
+  model?: string;
 }
 
 export async function generateWorksheet(data: GenerateRequest): Promise<{ worksheet: Worksheet; message: string }> {

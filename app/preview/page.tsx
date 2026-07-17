@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import NavBar from "@/components/NavBar";
 import QuestionCard from "@/components/QuestionCard";
 import { Worksheet, addWorksheetSoal } from "@/lib/api";
-import { Printer, Save, Check, RefreshCw, History, PlusSquare, PlusCircle, Wand2, X, Play, Key } from "lucide-react";
+import { Printer, Save, Check, History, PlusSquare, PlusCircle, Wand2, X, Play, Key } from "lucide-react";
 
 export default function PreviewPage() {
   const router = useRouter();
@@ -56,10 +56,12 @@ export default function PreviewPage() {
     if (!worksheet) return;
     setAppendLoading(true);
     try {
+      const selectedModel = sessionStorage.getItem("selectedModel") || undefined;
       const res = await addWorksheetSoal(worksheet.id, {
         topik: worksheet.judul_materi,
         kelas: worksheet.tingkat_kelas,
         ...appendForm,
+        model: selectedModel,
       });
       setWorksheet(res.worksheet);
       sessionStorage.setItem("currentWorksheet", JSON.stringify(res.worksheet));
@@ -90,19 +92,19 @@ export default function PreviewPage() {
         {/* Print-friendly A4 layout */}
         <div className="print-page">
           {/* Header */}
-          <div className="py-6 px-6 no-print" style={{ background: "var(--color-surface-low)" }}>
+          <div className="py-4 px-4 sm:px-6 no-print" style={{ background: "var(--color-surface-low)" }}>
             <div className="max-w-4xl mx-auto">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-3xl font-black" style={{ fontFamily: "var(--font-headline)" }}>
+                  <h1 className="text-2xl sm:text-3xl font-black" style={{ fontFamily: "var(--font-headline)" }}>
                     Preview: {worksheet.judul_materi}
                   </h1>
                   <p style={{ color: "var(--color-on-surface-variant)" }}>
-                    Kelas {worksheet.tingkat_kelas} SD  {worksheet.data_soal.length} soal
+                    Kelas {worksheet.tingkat_kelas} SD &bull; {worksheet.data_soal.length} soal
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 no-print">
-                  <label className="flex items-center gap-2 cursor-pointer mr-2">
+                  <label className="flex items-center gap-2 cursor-pointer mr-2 py-2" style={{ minHeight: "44px" }}>
                     <div className="relative">
                       <input 
                         type="checkbox" 
@@ -120,13 +122,13 @@ export default function PreviewPage() {
                   <button
                     onClick={handleSave}
                     disabled={saving || saved}
-                    className="btn-secondary flex items-center gap-2 py-2.5 px-6 text-sm"
+                    className="btn-secondary flex items-center gap-2 py-3 px-5 text-sm"
                   >
                     {saved ? <><Check className="w-4 h-4" /> Tersimpan</> : saving ? "..." : <><Save className="w-4 h-4" /> Simpan</>}
                   </button>
                   <button
                     onClick={handlePrint}
-                    className="btn-primary flex items-center gap-2 py-2.5 px-6 text-sm shadow-[0_4px_0_0_#004683]"
+                    className="btn-primary flex items-center gap-2 py-3 px-5 text-sm shadow-[0_4px_0_0_#004683]"
                   >
                     <Printer className="w-4 h-4" /> Cetak (A4)
                   </button>
@@ -178,25 +180,29 @@ export default function PreviewPage() {
 
         {/* Floating Action Bar */}
         <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-3 py-3 rounded-full no-print"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-3 px-3 py-3 rounded-full no-print w-[90%] max-w-max justify-center"
           style={{
             background: "rgba(255,255,255,0.9)",
             backdropFilter: "blur(12px)",
             boxShadow: "0 8px 40px rgba(0,0,0,0.15)",
+            zIndex: 40,
           }}
         >
-          <button onClick={() => router.push("/generate")} className="btn-secondary flex items-center gap-2 py-2 px-5 text-sm border-none shadow-none bg-gray-50 hover:bg-gray-100">
+          <button onClick={() => router.push("/generate")} className="btn-secondary flex items-center gap-2 py-2.5 px-4 text-sm border-none shadow-none bg-gray-50 hover:bg-gray-100" style={{ minWidth: "44px", minHeight: "44px", justifyContent: "center" }}>
             <PlusSquare className="w-4 h-4 text-gray-500" />
           </button>
-          <button onClick={() => router.push("/history")} className="btn-secondary flex items-center gap-2 py-2 px-5 text-sm border-none shadow-none bg-gray-50 hover:bg-gray-100">
+          <button onClick={() => router.push("/history")} className="btn-secondary flex items-center gap-2 py-2.5 px-4 text-sm border-none shadow-none bg-gray-50 hover:bg-gray-100" style={{ minWidth: "44px", minHeight: "44px", justifyContent: "center" }}>
             <History className="w-4 h-4 text-gray-500" />
           </button>
-          <button onClick={handlePrint} className="btn-secondary flex items-center gap-2 py-2 px-5 text-sm border-none shadow-none bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold">
-            <Printer className="w-4 h-4" /> Cetak
+          <button onClick={handlePrint} className="btn-secondary flex items-center gap-2 py-2.5 px-4 text-sm border-none shadow-none bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold" style={{ minWidth: "44px", minHeight: "44px", justifyContent: "center" }}>
+            <Printer className="w-4 h-4" />
+            <span className="hidden sm:inline">Cetak</span>
           </button>
           <div className="w-[1px] h-8 bg-gray-200 mx-1"></div>
-          <button onClick={() => router.push("/play")} className="btn-primary flex items-center gap-2 py-2 px-6 text-sm shadow-[0_4px_0_0_#004683] bg-gradient-to-r from-orange-500 to-red-500">
-            <Play className="w-4 h-4 fill-white" /> Mainkan Interaktif
+          <button onClick={() => router.push("/play")} className="btn-primary flex items-center gap-2 py-2.5 px-5 sm:px-6 text-sm shadow-[0_4px_0_0_#004683] bg-gradient-to-r from-orange-500 to-red-500" style={{ minHeight: "44px", justifyContent: "center" }}>
+            <Play className="w-4 h-4 fill-white" />
+            <span className="hidden sm:inline">Mainkan Interaktif</span>
+            <span className="inline sm:hidden">Main</span>
           </button>
         </div>
 

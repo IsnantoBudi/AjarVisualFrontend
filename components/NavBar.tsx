@@ -1,10 +1,12 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Sparkles, History } from "lucide-react";
+import { Sparkles, History, Menu, X } from "lucide-react";
 
 export default function NavBar() {
   const path = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
   const isActive = (href: string) => path === href;
 
   return (
@@ -19,6 +21,7 @@ export default function NavBar() {
           </span>
         </Link>
 
+        {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-2">
           {[
             { href: "/generate", label: "Buat Soal", icon: <Sparkles className="w-4 h-4" /> },
@@ -39,10 +42,58 @@ export default function NavBar() {
           ))}
         </div>
 
-        <Link href="/generate" className="btn-primary text-sm py-2.5 px-6 no-underline shadow-[0_4px_0_0_#004683]">
-          Coba (Tanpa Login)
-        </Link>
+        {/* Desktop CTA */}
+        <div className="hidden md:block">
+          <Link href="/generate" className="btn-primary text-sm py-2.5 px-6 no-underline shadow-[0_4px_0_0_#004683]">
+            Coba (Tanpa Login)
+          </Link>
+        </div>
+
+        {/* Mobile Hamburger Button */}
+        <div className="flex md:hidden items-center">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600 focus:outline-none"
+            aria-label="Toggle menu"
+            style={{ minWidth: "44px", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center" }}
+          >
+            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isOpen && (
+        <div className="md:hidden glass-nav border-t border-gray-100 py-4 px-6 flex flex-col gap-4 animate-in slide-in-from-top duration-200">
+          {[
+            { href: "/generate", label: "Buat Soal", icon: <Sparkles className="w-4 h-4" /> },
+            { href: "/history", label: "Riwayat", icon: <History className="w-4 h-4" /> },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setIsOpen(false)}
+              className={`flex items-center gap-3 px-5 py-3 rounded-2xl text-base font-bold transition-all duration-200 ${
+                isActive(item.href)
+                  ? "gradient-hero text-white shadow-md"
+                  : "text-gray-600 bg-gray-50/50 hover:bg-blue-50 hover:text-blue-700"
+              }`}
+              style={{ minHeight: "48px" }}
+            >
+              {item.icon}
+              {item.label}
+            </Link>
+          ))}
+          <Link
+            href="/generate"
+            onClick={() => setIsOpen(false)}
+            className="btn-primary text-center text-sm py-3 px-6 no-underline shadow-[0_4px_0_0_#004683] block mt-2"
+            style={{ minHeight: "48px" }}
+          >
+            Coba (Tanpa Login)
+          </Link>
+        </div>
+      )}
     </nav>
   );
 }
