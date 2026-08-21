@@ -12,6 +12,7 @@ export default function PreviewPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showKey, setShowKey] = useState(false);
+  const [includeAnswerKeyPage, setIncludeAnswerKeyPage] = useState(true);
   const [showAppend, setShowAppend] = useState(false);
   const [appendLoading, setAppendLoading] = useState(false);
   const [appendForm, setAppendForm] = useState({
@@ -45,6 +46,14 @@ export default function PreviewPage() {
     sessionStorage.setItem("currentWorksheet", JSON.stringify(updated));
   };
 
+  const handleSoalUpdate = (index: number, updatedSoal: any) => {
+    if (!worksheet) return;
+    const updated = { ...worksheet };
+    updated.data_soal[index] = updatedSoal;
+    setWorksheet(updated);
+    sessionStorage.setItem("currentWorksheet", JSON.stringify(updated));
+  };
+
   const handleSave = async () => {
     setSaving(true);
     await new Promise((r) => setTimeout(r, 500));
@@ -57,11 +66,13 @@ export default function PreviewPage() {
     setAppendLoading(true);
     try {
       const selectedModel = sessionStorage.getItem("selectedModel") || undefined;
+      const selectedImageModel = sessionStorage.getItem("selectedImageModel") || undefined;
       const res = await addWorksheetSoal(worksheet.id, {
         topik: worksheet.judul_materi,
         kelas: worksheet.tingkat_kelas,
         ...appendForm,
         model: selectedModel,
+        image_model: selectedImageModel,
       });
       setWorksheet(res.worksheet);
       sessionStorage.setItem("currentWorksheet", JSON.stringify(res.worksheet));
@@ -103,8 +114,9 @@ export default function PreviewPage() {
                     Kelas {worksheet.tingkat_kelas} SD &bull; {worksheet.data_soal.length} soal
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3 no-print">
-                  <label className="flex items-center gap-2 cursor-pointer mr-2 py-2" style={{ minHeight: "44px" }}>
+                <div className="flex flex-wrap items-center gap-2.5 no-print">
+                  {/* Interactive Key Preview Toggle */}
+                  <label className="flex items-center gap-2 cursor-pointer py-1.5 px-3 rounded-xl bg-white border border-gray-200 shadow-sm hover:border-gray-300 transition-colors">
                     <div className="relative">
                       <input 
                         type="checkbox" 
@@ -112,23 +124,37 @@ export default function PreviewPage() {
                         checked={showKey} 
                         onChange={(e) => setShowKey(e.target.checked)} 
                       />
-                      <div className={`block w-12 h-7 rounded-full transition-colors ${showKey ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                      <div className={`dot absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform ${showKey ? 'translate-x-5' : ''}`}></div>
+                      <div className={`block w-8 h-5 rounded-full transition-colors ${showKey ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                      <div className={`dot absolute left-0.5 top-0.5 bg-white w-4 h-4 rounded-full transition-transform ${showKey ? 'translate-x-3' : ''}`}></div>
                     </div>
-                    <span className="text-sm font-bold text-gray-700 flex items-center gap-1">
-                      <Key className="w-4 h-4" /> Kunci Jawaban
+                    <span className="text-xs font-bold text-gray-700 flex items-center gap-1">
+                      <Key className="w-3.5 h-3.5 text-green-600" /> Mode Kunci
                     </span>
                   </label>
+
+                  {/* Print Answer Key Attachment Page Toggle */}
+                  <label className="flex items-center gap-2 cursor-pointer py-1.5 px-3 rounded-xl bg-white border border-gray-200 shadow-sm hover:border-gray-300 transition-colors">
+                    <input 
+                      type="checkbox" 
+                      className="w-3.5 h-3.5 accent-blue-600 rounded" 
+                      checked={includeAnswerKeyPage} 
+                      onChange={(e) => setIncludeAnswerKeyPage(e.target.checked)} 
+                    />
+                    <span className="text-xs font-bold text-gray-700">
+                      + Kunci Guru (Cetak)
+                    </span>
+                  </label>
+
                   <button
                     onClick={handleSave}
                     disabled={saving || saved}
-                    className="btn-secondary flex items-center gap-2 py-3 px-5 text-sm"
+                    className="btn-secondary flex items-center gap-2 py-2.5 px-4 text-xs font-bold"
                   >
-                    {saved ? <><Check className="w-4 h-4" /> Tersimpan</> : saving ? "..." : <><Save className="w-4 h-4" /> Simpan</>}
+                    {saved ? <><Check className="w-4 h-4 text-green-600" /> Tersimpan</> : saving ? "..." : <><Save className="w-4 h-4" /> Simpan</>}
                   </button>
                   <button
                     onClick={handlePrint}
-                    className="btn-primary flex items-center gap-2 py-3 px-5 text-sm shadow-[0_4px_0_0_#004683]"
+                    className="btn-primary flex items-center gap-2 py-2.5 px-5 text-xs font-bold shadow-[0_4px_0_0_#004683]"
                   >
                     <Printer className="w-4 h-4" /> Cetak (A4)
                   </button>
@@ -137,18 +163,28 @@ export default function PreviewPage() {
             </div>
           </div>
 
-          {/* Print Header */}
+          {/* Print Header (LKPD Style) */}
           <div className="hidden print:block mb-4">
-            <h1 className="text-xl font-black text-center mb-1">{worksheet.judul_materi}</h1>
-            <p className="text-sm text-center mb-4">Lembar Soal Kelas {worksheet.tingkat_kelas} SD | {worksheet.data_soal.length} soal</p>
-
-            <div className="flex justify-between border-b-2 border-black pb-1 mb-2">
-              <p className="text-sm font-bold">Nama: _________________________</p>
-              <p className="text-sm font-bold">Nilai: _______</p>
+            {/* Box Header Nama & Kelas */}
+            <div className="flex items-center justify-between border-2 border-blue-400 rounded-2xl px-5 py-2.5 mb-4 text-sm font-bold text-blue-900 bg-blue-50/20">
+              <div className="flex items-center gap-2">
+                <span>Nama :</span>
+                <span className="w-48 border-b-2 border-dotted border-blue-400 inline-block"></span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>Kelas :</span>
+                <span className="w-24 border-b-2 border-dotted border-blue-400 inline-block"></span>
+              </div>
             </div>
-            <div className="flex justify-between mb-4">
-              <p className="text-sm font-bold">No. Absen: ______________________</p>
-              <p className="text-sm font-bold">Tanggal: ____________________</p>
+
+            {/* Judul Materi LKPD & Instruksi */}
+            <div className="text-center mb-4">
+              <h1 className="text-2xl font-black uppercase tracking-wider text-blue-900 font-headline mb-1">
+                {worksheet.judul_materi}
+              </h1>
+              <p className="text-xs text-gray-500 font-medium italic">
+                {worksheet.data_soal[0]?.pertanyaan || `Lembar Kerja Peserta Didik (LKPD) - Kelas ${worksheet.tingkat_kelas} SD`}
+              </p>
             </div>
           </div>
 
@@ -161,10 +197,54 @@ export default function PreviewPage() {
                   soal={soal}
                   index={i}
                   onImageChange={handleImageChange}
+                  onUpdateSoal={handleSoalUpdate}
                   showKey={showKey}
                 />
               ))}
             </div>
+
+            {/* ── Lampiran Kunci Jawaban Guru (Cetak Halaman Terpisah) ── */}
+            {includeAnswerKeyPage && (
+              <div className="hidden print:block pt-8 mt-12 border-t-2 border-dashed border-gray-400" style={{ pageBreakBefore: "always", breakBefore: "page" }}>
+                <div className="text-center mb-6">
+                  <div className="inline-block px-3 py-1 bg-gray-100 border border-gray-300 rounded-full text-[10px] font-black uppercase tracking-wider text-gray-700 mb-1">
+                    Lampiran Pegangan Guru
+                  </div>
+                  <h2 className="text-xl font-black uppercase text-gray-900 font-headline">
+                    KUNCI JAWABAN: {worksheet.judul_materi}
+                  </h2>
+                  <p className="text-xs text-gray-500 font-medium">
+                    Kelas {worksheet.tingkat_kelas} SD &bull; Total {worksheet.data_soal.length} Butir Soal
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2.5">
+                  {worksheet.data_soal.map((s, idx) => {
+                    let ansText = s.jawaban_benar || s.kata_target || "";
+                    if (s.tipe_soal === "mencocokkan" && s.pasangan_item) {
+                      ansText = s.pasangan_item.map((p) => `${p.kiri} → ${p.kanan}`).join(", ");
+                    }
+                    if (s.tipe_soal === "drill_matematika") {
+                      ansText = "Latihan drill berhitung angka mandiri";
+                    }
+
+                    return (
+                      <div key={idx} className="flex items-start gap-3 p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs">
+                        <span className="font-black text-blue-900 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded-lg flex-shrink-0">
+                          Soal {idx + 1}
+                        </span>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-800 mb-1">{s.pertanyaan}</p>
+                          <div className="text-emerald-700 font-bold text-[11px]">
+                            Kunci Jawaban: <span className="font-black text-emerald-900">{ansText || "Lihat Lembar Jawaban"}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="mt-8 text-center no-print">
               <button

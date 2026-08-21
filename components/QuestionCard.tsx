@@ -1,14 +1,86 @@
-"use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Soal, MatchingPair } from "@/lib/api";
 import { regenerateImage } from "@/lib/api";
-import { RefreshCw, ImageOff } from "lucide-react";
+import { RefreshCw, ImageOff, Pencil, Check } from "lucide-react";
 
 interface Props {
   soal: Soal;
   index: number;
   onImageChange?: (index: number, newUrl: string) => void;
+  onUpdateSoal?: (index: number, updatedSoal: Soal) => void;
   showKey?: boolean;
+}
+
+// ── Inline Editable Question Title ──────────────────────────────────────────
+function EditableQuestionTitle({
+  title,
+  onSave,
+}: {
+  title: string;
+  onSave?: (newTitle: string) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [value, setValue] = useState(title);
+
+  useEffect(() => {
+    setValue(title);
+  }, [title]);
+
+  const handleBlurOrEnter = () => {
+    setIsEditing(false);
+    if (value.trim() !== title && onSave) {
+      onSave(value.trim());
+    }
+  };
+
+  return (
+    <div className="flex-1 group relative">
+      {/* Screen mode: editable */}
+      <div className="print:hidden">
+        {isEditing ? (
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              onBlur={handleBlurOrEnter}
+              onKeyDown={(e) => e.key === "Enter" && handleBlurOrEnter()}
+              autoFocus
+              className="w-full text-base sm:text-lg font-semibold text-gray-900 border-2 border-blue-400 rounded-xl px-3 py-1 bg-blue-50/40 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            />
+            <button
+              onClick={handleBlurOrEnter}
+              className="p-1.5 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition-colors flex-shrink-0"
+            >
+              <Check className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div
+            onClick={() => setIsEditing(true)}
+            className="flex items-center gap-2 cursor-pointer hover:bg-blue-50/50 p-1 -m-1 rounded-xl transition-colors"
+            title="Klik untuk mengedit teks soal ini"
+          >
+            <h3
+              className="text-base sm:text-lg font-semibold leading-snug"
+              style={{ fontFamily: "var(--font-headline)", color: "var(--color-on-surface)" }}
+            >
+              {value}
+            </h3>
+            <Pencil className="w-3.5 h-3.5 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+          </div>
+        )}
+      </div>
+
+      {/* Print mode: clean typography */}
+      <h3
+        className="hidden print:block text-base font-semibold leading-tight pt-1"
+        style={{ fontFamily: "var(--font-headline)", color: "var(--color-on-surface)" }}
+      >
+        {value}
+      </h3>
+    </div>
+  );
 }
 
 // ── Shimmer skeleton ────────────────────────────────────────────────────────
@@ -201,7 +273,8 @@ function QuestionImage({
     setImgLoaded(false);
     setImgError(false);
     try {
-      const newUrl = await regenerateImage(imagePrompt || "");
+      const selectedImageModel = typeof window !== "undefined" ? sessionStorage.getItem("selectedImageModel") || undefined : undefined;
+      const newUrl = await regenerateImage(imagePrompt || "", selectedImageModel);
       setCurrentUrl(newUrl);
       onImageChange?.(index, newUrl);
     } catch (e) {
@@ -339,13 +412,300 @@ function QuestionImage({
   );
 }
 
+// ── 1. Lengkapi Suku Kata ──────────────────────────────────────────────────
+function LengkapiSukuKataRow({
+  soal,
+  index,
+  showKey,
+  onImageChange,
+}: {
+  soal: Soal;
+  index: number;
+  showKey?: boolean;
+  onImageChange?: (index: number, newUrl: string) => void;
+}) {
+  const [selectedPilihan, setSelectedPilihan] = useState<string | null>(null);
+  const pilihan = soal.pilihan_suku_kata || ["pa", "pi"];
+  const sukuAwal = soal.suku_kata_awal || "Sa";
+
+  return (
+    <div className="lkpd-card flex items-center justify-between border-2 border-blue-300 rounded-2xl p-2 sm:p-3 bg-white mb-3 print:mb-2 print:border-blue-400">
+      {/* Kolom Gambar */}
+      <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 flex items-center justify-center bg-blue-50/50 rounded-xl overflow-hidden border border-blue-100 print:border-none">
+        {soal.image_url ? (
+          <img src={soal.image_url} alt={soal.pertanyaan} className="w-full h-full object-contain p-1" />
+        ) : (
+          <span className="text-xl">🖼️</span>
+        )}
+      </div>
+
+      {/* Kolom Suku Kata Awal + Garis Isian */}
+      <div className="flex-1 px-4 sm:px-8 flex items-baseline gap-2 sm:gap-3">
+        <span className="text-2xl sm:text-3xl font-black text-blue-800 tracking-wider font-mono">
+          {sukuAwal.split("").join(" ")}
+        </span>
+        <span className="text-xl sm:text-2xl font-black text-blue-400 font-mono tracking-widest">
+          {showKey && soal.jawaban_benar ? (
+            <span className="text-green-700 bg-green-100 px-2 py-0.5 rounded-lg underline decoration-green-500">
+              {soal.jawaban_benar.split("").join(" ")}
+            </span>
+          ) : (
+            "_ _ _ _"
+          )}
+        </span>
+      </div>
+
+      {/* Kolom 2 Kotak Pilihan Suku Kata */}
+      <div className="flex items-stretch border-2 border-blue-300 rounded-xl overflow-hidden bg-blue-50/30 print:border-blue-400">
+        {pilihan.map((p, i) => {
+          const isCorrect = p === soal.jawaban_benar;
+          const isSelected = selectedPilihan === p;
+          const isKeyActive = showKey && isCorrect;
+
+          return (
+            <button
+              key={i}
+              disabled={showKey}
+              onClick={() => setSelectedPilihan(p)}
+              className={`px-3.5 py-2.5 sm:px-5 sm:py-3 text-lg sm:text-2xl font-black transition-all ${
+                i > 0 ? "border-l-2 border-blue-300 print:border-blue-400" : ""
+              } ${
+                isKeyActive
+                  ? "bg-green-400 text-white font-black"
+                  : isSelected
+                  ? "bg-blue-600 text-white"
+                  : "text-blue-700 hover:bg-blue-100"
+              }`}
+            >
+              {p}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── 2. Tulis Huruf Depan ────────────────────────────────────────────────────
+function HurufDepanRow({
+  soal,
+  index,
+  showKey,
+  onImageChange,
+}: {
+  soal: Soal;
+  index: number;
+  showKey?: boolean;
+  onImageChange?: (index: number, newUrl: string) => void;
+}) {
+  const [inputVal, setInputVal] = useState("");
+  const sisa = soal.sisa_kata || "ola";
+  const hurufAwal = soal.huruf_depan || soal.jawaban_benar || "B";
+
+  return (
+    <div className="lkpd-card flex items-center gap-4 sm:gap-6 p-2 sm:p-3 bg-white rounded-2xl mb-3 print:mb-2 border border-gray-100 print:border-none">
+      {/* Gambar Objek */}
+      <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 flex items-center justify-center bg-gray-50 rounded-xl overflow-hidden border-2 border-gray-200 print:border-black">
+        {soal.image_url ? (
+          <img src={soal.image_url} alt={soal.pertanyaan} className="w-full h-full object-contain p-1" />
+        ) : (
+          <span className="text-2xl">🍎</span>
+        )}
+      </div>
+
+      {/* Kotak Tulis Huruf Depan */}
+      <div className="w-12 h-12 sm:w-14 sm:h-14 border-2 border-black rounded-lg flex items-center justify-center bg-white shadow-sm print:border-black">
+        {showKey ? (
+          <span className="text-2xl sm:text-3xl font-black text-green-700">{hurufAwal}</span>
+        ) : (
+          <input
+            type="text"
+            maxLength={1}
+            value={inputVal}
+            onChange={(e) => setInputVal(e.target.value.toUpperCase())}
+            className="w-full h-full text-center text-2xl sm:text-3xl font-black text-gray-800 uppercase outline-none bg-transparent"
+          />
+        )}
+      </div>
+
+      {/* Sisa Huruf Kata */}
+      <div className="text-3xl sm:text-4xl font-bold tracking-[0.25em] text-gray-800 font-sans">
+        {sisa.split("").join(" ")}
+      </div>
+    </div>
+  );
+}
+
+// ── 3. Lingkari Kata Sesuai Gambar ──────────────────────────────────────────
+function LingkariKataRow({
+  soal,
+  index,
+  showKey,
+  onImageChange,
+}: {
+  soal: Soal;
+  index: number;
+  showKey?: boolean;
+  onImageChange?: (index: number, newUrl: string) => void;
+}) {
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+  const opsi = soal.opsi_kata || ["Sapu", "Saku", "Suka"];
+
+  return (
+    <div className="lkpd-card flex items-center gap-3 sm:gap-4 p-2 bg-white rounded-2xl mb-3 print:mb-2">
+      {/* Kolom Gambar di Kotak Berborder */}
+      <div className="w-20 h-18 sm:w-24 sm:h-20 flex-shrink-0 flex items-center justify-center bg-white rounded-xl overflow-hidden border-2 border-gray-300 print:border-black">
+        {soal.image_url ? (
+          <img src={soal.image_url} alt={soal.pertanyaan} className="w-full h-full object-contain p-1" />
+        ) : (
+          <span className="text-2xl">🧹</span>
+        )}
+      </div>
+
+      {/* Kotak Rounded Berisi 3 Kata Pilihan */}
+      <div className="flex-1 flex items-center justify-around border-2 border-gray-300 rounded-2xl py-3 px-2 sm:px-4 bg-white print:border-black">
+        {opsi.map((kata, i) => {
+          const isCorrect = kata === soal.jawaban_benar;
+          const isSelected = selectedWord === kata;
+          const isKeyActive = showKey && isCorrect;
+
+          return (
+            <button
+              key={i}
+              disabled={showKey}
+              onClick={() => setSelectedWord(kata)}
+              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-base sm:text-xl font-bold transition-all ${
+                isKeyActive
+                  ? "border-2 border-green-600 bg-green-100 text-green-800"
+                  : isSelected
+                  ? "border-2 border-blue-600 bg-blue-50 text-blue-800 font-black"
+                  : "text-gray-800 hover:bg-gray-50 border-2 border-transparent"
+              }`}
+            >
+              {kata}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── 4. Menyusun Kata (Anagram / Scramble) ───────────────────────────────────
+function SusunKataRow({
+  soal,
+  index,
+  showKey,
+  onImageChange,
+}: {
+  soal: Soal;
+  index: number;
+  showKey?: boolean;
+  onImageChange?: (index: number, newUrl: string) => void;
+}) {
+  const hurufAcak = soal.huruf_acak || "L P E A";
+  const jumlahHuruf = soal.jumlah_huruf || 4;
+  const dashes = Array(jumlahHuruf).fill("_").join("  ");
+
+  return (
+    <div className="lkpd-card flex items-center gap-4 sm:gap-6 p-2 bg-white rounded-2xl mb-3 print:mb-2">
+      {/* Gambar Objek */}
+      <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 flex items-center justify-center bg-white rounded-xl overflow-hidden border-2 border-gray-800 print:border-black">
+        {soal.image_url ? (
+          <img src={soal.image_url} alt={soal.pertanyaan} className="w-full h-full object-contain p-1" />
+        ) : (
+          <span className="text-2xl">🍎</span>
+        )}
+      </div>
+
+      {/* Huruf Acak = Garis Isian */}
+      <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+        <span className="text-2xl sm:text-3xl font-black text-gray-900 tracking-wider font-mono">
+          {hurufAcak} =
+        </span>
+        <span className="text-2xl sm:text-3xl font-black text-gray-600 tracking-widest font-mono">
+          {showKey && soal.jawaban_benar ? (
+            <span className="text-green-700 bg-green-100 px-2 py-0.5 rounded-lg underline decoration-green-500">
+              {soal.jawaban_benar.split("").join(" ")}
+            </span>
+          ) : (
+            dashes
+          )}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── 5. Drill Berhitung Matematika (Multi-Kolom Grid) ────────────────────────
+function DrillMatematikaGrid({ soal }: { soal: Soal }) {
+  const blocks = soal.math_blocks || [
+    { judul_blok: "Kotak 1", items: ["1 + 2 =", "2 + 4 =", "4 + 6 =", "7 + 8 =", "9 + 1 ="] },
+    { judul_blok: "Kotak 2", items: ["3 + 3 =", "2 + 2 =", "4 + 5 =", "6 + 3 =", "7 + 9 ="] },
+    { judul_blok: "Kotak 3", items: ["8 + 4 =", "6 + 2 =", "2 + 3 =", "7 + 1 =", "5 + 6 ="] },
+    { judul_blok: "Kotak 4", items: ["5 + 1 =", "8 + 4 =", "4 + 3 =", "7 + 5 =", "6 + 1 ="] },
+    { judul_blok: "Kotak 5", items: ["1 + 9 =", "8 + 2 =", "7 + 6 =", "6 + 6 =", "5 + 9 ="] },
+    { judul_blok: "Kotak 6", items: ["2 + 9 =", "3 + 4 =", "7 + 4 =", "1 + 3 =", "4 + 1 ="] },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 print:grid-cols-3 print:gap-3 my-4">
+      {blocks.map((block, idx) => (
+        <div
+          key={idx}
+          className="border-2 border-blue-300 rounded-2xl p-3 sm:p-4 bg-white shadow-sm print:border-blue-400 print:shadow-none"
+        >
+          <div className="flex flex-col gap-2.5">
+            {block.items.map((item, itemIdx) => (
+              <div
+                key={itemIdx}
+                className="flex items-center justify-between text-base sm:text-lg font-black text-gray-800 font-mono border-b border-gray-100 pb-1"
+              >
+                <span>{item}</span>
+                <span className="w-10 border-b-2 border-gray-300 inline-block ml-2"></span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Main QuestionCard ───────────────────────────────────────────────────────
-export default function QuestionCard({ soal, index, onImageChange, showKey }: Props) {
+export default function QuestionCard({ soal, index, onImageChange, onUpdateSoal, showKey }: Props) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const optionLabels = ["A", "B", "C", "D"];
-  const isMatching = soal.tipe_soal === "mencocokkan";
-  const isIsian = soal.tipe_soal === "isian_singkat";
+  const tipe = soal.tipe_soal;
+
+  // 1. Lengkapi Suku Kata
+  if (tipe === "lengkapi_suku_kata") {
+    return <LengkapiSukuKataRow soal={soal} index={index} showKey={showKey} onImageChange={onImageChange} />;
+  }
+
+  // 2. Tulis Huruf Depan
+  if (tipe === "huruf_depan") {
+    return <HurufDepanRow soal={soal} index={index} showKey={showKey} onImageChange={onImageChange} />;
+  }
+
+  // 3. Lingkari Kata Sesuai Gambar
+  if (tipe === "lingkari_kata") {
+    return <LingkariKataRow soal={soal} index={index} showKey={showKey} onImageChange={onImageChange} />;
+  }
+
+  // 4. Menyusun Kata (Anagram)
+  if (tipe === "susun_kata") {
+    return <SusunKataRow soal={soal} index={index} showKey={showKey} onImageChange={onImageChange} />;
+  }
+
+  // 5. Drill Matematika
+  if (tipe === "drill_matematika") {
+    return <DrillMatematikaGrid soal={soal} />;
+  }
+
+  const isMatching = tipe === "mencocokkan";
+  const isIsian = tipe === "isian_singkat";
   const isPilihan = !isMatching && !isIsian;
   
   let finalPairs = soal.pasangan_item || [];
@@ -366,12 +726,10 @@ export default function QuestionCard({ soal, index, onImageChange, showKey }: Pr
         >
           {index + 1}
         </div>
-        <h3
-          className="text-lg font-semibold print:text-base leading-tight pt-1"
-          style={{ fontFamily: "var(--font-headline)", color: "var(--color-on-surface)" }}
-        >
-          {soal.pertanyaan}
-        </h3>
+        <EditableQuestionTitle 
+          title={soal.pertanyaan} 
+          onSave={(newTitle) => onUpdateSoal?.(index, { ...soal, pertanyaan: newTitle })} 
+        />
       </div>
 
       {/* ── Illustration for choices/isian WITH image ── */}

@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from "@/components/NavBar";
 import ProgressBloom from "@/components/ProgressBloom";
+import LkpdTypeSelector, { getLkpdType } from "@/components/LkpdTypeSelector";
 import { generateWorksheet } from "@/lib/api";
-import { Sparkles, BookOpen, GraduationCap, ListOrdered, Clock, AlertTriangle, Wand2 } from "lucide-react";
+import { Sparkles, BookOpen, GraduationCap, ListOrdered, Clock, AlertTriangle, Wand2, ImageIcon, Ban } from "lucide-react";
 
 export default function GeneratePage() {
   const router = useRouter();
@@ -15,16 +16,45 @@ export default function GeneratePage() {
   const [tipeSoal, setTipeSoal] = useState("pilihan_ganda");
   const [tanpaGambar, setTanpaGambar] = useState(false);
   const [model, setModel] = useState("gemma4");
+  const [imageModel, setImageModel] = useState("pollinations");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const recent = [
-    { text: "Penjumlahan Buah", icon: "🍎" },
-    { text: "Siklus Air", icon: "💧" },
-    { text: "Anatomi Hewan", icon: "🦁" },
-    { text: "Sistem Tata Surya", icon: "🪐" },
-    { text: "Dongeng Nusantara", icon: "📚" },
+  const handleToggleGambar = (enabled: boolean) => {
+    const newTanpaGambar = !enabled;
+    setTanpaGambar(newTanpaGambar);
+    
+    const currentMeta = getLkpdType(tipeSoal);
+    if (newTanpaGambar) {
+      // Mode Gambar OFF -> hanya format tanpa_gambar dan opsional yang diizinkan
+      if (currentMeta?.imageRequirement === "wajib") {
+        setTipeSoal("pilihan_ganda");
+      }
+    } else {
+      // Mode Gambar ON -> hanya format wajib dan opsional yang diizinkan
+      if (currentMeta?.imageRequirement === "tanpa_gambar") {
+        setTipeSoal("pilihan_ganda");
+      }
+    }
+  };
+
+  const handleTipeSoalChange = (newType: string) => {
+    setTipeSoal(newType);
+  };
+
+  const kurikulumMerdekaPresets = [
+    { text: "Penjumlahan Buah", icon: "🍎", kelas: 1, label: "Fase A (Kls 1)" },
+    { text: "Mengenal Hewan & Habitat", icon: "🦁", kelas: 2, label: "Fase A (Kls 2)" },
+    { text: "Siklus Air & Cuaca", icon: "💧", kelas: 3, label: "Fase B (Kls 3)" },
+    { text: "Pancasila & Gotong Royong", icon: "🇮🇩", kelas: 4, label: "Fase B (Kls 4)" },
+    { text: "Sistem Tata Surya", icon: "🪐", kelas: 5, label: "Fase C (Kls 5)" },
+    { text: "Sejarah Kemerdekaan RI", icon: "📚", kelas: 6, label: "Fase C (Kls 6)" },
   ];
+
+  const handleSelectPreset = (preset: { text: string; kelas: number }) => {
+    setTopik(preset.text);
+    setKelas(preset.kelas);
+  };
 
   const handleGenerate = async () => {
     if (!topik.trim()) {
@@ -34,10 +64,19 @@ export default function GeneratePage() {
     setError("");
     setLoading(true);
     try {
-      const result = await generateWorksheet({ topik, kelas, jumlah_soal: jumlahSoal, tipe_soal: tipeSoal, tanpa_gambar: tanpaGambar, model });
+      const result = await generateWorksheet({
+        topik,
+        kelas,
+        jumlah_soal: jumlahSoal,
+        tipe_soal: tipeSoal,
+        tanpa_gambar: tanpaGambar,
+        model,
+        image_model: imageModel,
+      });
       // Store result in sessionStorage for preview page
       sessionStorage.setItem("currentWorksheet", JSON.stringify(result.worksheet));
       sessionStorage.setItem("selectedModel", model);
+      sessionStorage.setItem("selectedImageModel", imageModel);
       router.push("/preview");
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan. Coba lagi.");
@@ -99,17 +138,27 @@ export default function GeneratePage() {
                 value={topik}
                 onChange={(e) => setTopik(e.target.value)}
               />
-              {/* Quick suggestions */}
-              <div className="flex flex-wrap gap-2 mt-4">
-                {recent.map((r) => (
-                  <button
-                    key={r.text}
-                    onClick={() => setTopik(r.text)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105 border border-gray-200 shadow-sm bg-white text-gray-600 hover:text-blue-700 hover:border-blue-200 hover:bg-blue-50"
-                  >
-                    <span>{r.icon}</span> {r.text}
-                  </button>
-                ))}
+              {/* Quick suggestions (Kurikulum Merdeka) */}
+              <div className="mt-4">
+                <div className="text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                  💡 Inspirasi Topik Kurikulum Merdeka (Klik untuk set topik & kelas otomatis):
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {kurikulumMerdekaPresets.map((r) => (
+                    <button
+                      key={r.text}
+                      type="button"
+                      onClick={() => handleSelectPreset(r)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-105 border border-gray-200 shadow-sm bg-white text-gray-700 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-50/50"
+                    >
+                      <span>{r.icon}</span>
+                      <span>{r.text}</span>
+                      <span className="text-[9px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.2 rounded-md">
+                        {r.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -224,68 +273,102 @@ export default function GeneratePage() {
               </div>
             </div>
 
-            {/* Tipe Soal & Mode Gambar */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 pt-4 border-t border-gray-100">
-              <div>
-                <label className="flex items-center gap-2 font-bold mb-3 text-sm" style={{ fontFamily: "var(--font-headline)" }}>
-                  <Wand2 className="w-4 h-4 text-purple-600" /> TIPE SOAL
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer border-2 transition-all group ${tipeSoal === 'pilihan_ganda' ? 'border-purple-500 bg-purple-50/50' : 'border-gray-100 bg-white hover:border-gray-300'}`}>
-                    <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0 mt-0.5">
-                       <input type="radio" name="tipeSoal" value="pilihan_ganda" checked={tipeSoal === "pilihan_ganda"} onChange={(e) => setTipeSoal(e.target.value)} className="peer absolute w-full h-full opacity-0 cursor-pointer" />
-                       <div className="w-full h-full rounded-full border-2 border-gray-300 peer-checked:border-purple-600 peer-checked:border-[6px] transition-all"></div>
-                    </div>
-                    <span className="font-bold text-gray-700 leading-tight">Pilihan Ganda</span>
-                  </label>
-                  
-                  <label className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer border-2 transition-all group ${tipeSoal === 'benar_salah' ? 'border-purple-500 bg-purple-50/50' : 'border-gray-100 bg-white hover:border-gray-300'}`}>
-                    <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0 mt-0.5">
-                       <input type="radio" name="tipeSoal" value="benar_salah" checked={tipeSoal === "benar_salah"} onChange={(e) => setTipeSoal(e.target.value)} className="peer absolute w-full h-full opacity-0 cursor-pointer" />
-                       <div className="w-full h-full rounded-full border-2 border-gray-300 peer-checked:border-purple-600 peer-checked:border-[6px] transition-all"></div>
-                    </div>
-                    <div className="flex flex-col items-start gap-1">
-                      <span className="font-bold text-gray-700 leading-tight">Benar / Salah</span>
-                      <span className="text-[9px] bg-green-100 border border-green-200 text-green-800 px-2 py-0.5 rounded-full font-black uppercase tracking-wider">Baru</span>
-                    </div>
-                  </label>
-                  
-                  <label className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer border-2 transition-all group ${tipeSoal === 'isian_singkat' ? 'border-purple-500 bg-purple-50/50' : 'border-gray-100 bg-white hover:border-gray-300'}`}>
-                    <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0 mt-0.5">
-                       <input type="radio" name="tipeSoal" value="isian_singkat" checked={tipeSoal === "isian_singkat"} onChange={(e) => setTipeSoal(e.target.value)} className="peer absolute w-full h-full opacity-0 cursor-pointer" />
-                       <div className="w-full h-full rounded-full border-2 border-gray-300 peer-checked:border-purple-600 peer-checked:border-[6px] transition-all"></div>
-                    </div>
-                    <div className="flex flex-col items-start gap-1">
-                      <span className="font-bold text-gray-700 leading-tight">Isian Singkat</span>
-                      <span className="text-[9px] bg-green-100 border border-green-200 text-green-800 px-2 py-0.5 rounded-full font-black uppercase tracking-wider">Baru</span>
-                    </div>
-                  </label>
-
-                  <label className={`flex items-start gap-3 p-4 rounded-2xl cursor-pointer border-2 transition-all group ${tipeSoal === 'mencocokkan' ? 'border-purple-500 bg-purple-50/50' : 'border-gray-100 bg-white hover:border-gray-300'}`}>
-                    <div className="relative flex items-center justify-center w-5 h-5 flex-shrink-0 mt-0.5">
-                       <input type="radio" name="tipeSoal" value="mencocokkan" checked={tipeSoal === "mencocokkan"} onChange={(e) => setTipeSoal(e.target.value)} className="peer absolute w-full h-full opacity-0 cursor-pointer" />
-                       <div className="w-full h-full rounded-full border-2 border-gray-300 peer-checked:border-purple-600 peer-checked:border-[6px] transition-all"></div>
-                    </div>
-                    <span className="font-bold text-gray-700 leading-tight">Mencocokkan</span>
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <label className="flex items-center gap-2 font-bold mb-3 text-sm" style={{ fontFamily: "var(--font-headline)" }}>
-                  <Sparkles className="w-4 h-4 text-pink-500" /> MODE GAMBAR
-                </label>
-                <label className="flex items-center justify-between p-5 rounded-2xl cursor-pointer border-2 transition-all bg-white" style={{ borderColor: !tanpaGambar ? "#bfdbfe" : "#f1f5f9", boxShadow: !tanpaGambar ? "0 4px 14px rgba(37,99,235,0.08)" : "none" }}>
+            {/* Pengaturan Gambar & Pilihan Model AI Gambar */}
+            <div className="mb-8 pt-4 border-t border-gray-100">
+              <label className="flex items-center gap-2 font-bold mb-3 text-sm text-gray-900" style={{ fontFamily: "var(--font-headline)" }}>
+                <Sparkles className="w-4 h-4 text-pink-500" /> PENGATURAN GAMBAR & ILUSTRASI
+              </label>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                <label 
+                  className="flex items-center justify-between p-5 rounded-2xl border-2 transition-all bg-white cursor-pointer"
+                  style={{
+                    borderColor: !tanpaGambar ? "#bfdbfe" : "#f1f5f9",
+                    boxShadow: !tanpaGambar ? "0 4px 14px rgba(37,99,235,0.08)" : "none"
+                  }}
+                >
                   <div className="flex-1 pr-3">
-                    <div className={`font-black text-sm ${!tanpaGambar ? 'text-blue-700' : 'text-gray-500'}`}>AI Ilustrasi Otomatis</div>
-                    <div className="text-xs text-gray-400 mt-1 font-medium leading-relaxed max-w-[200px] xs:max-w-none">Menggenerasi visual HD untuk tiap pertanyaan.</div>
+                    <div className="flex items-center gap-2">
+                      <div className={`font-black text-sm ${!tanpaGambar ? 'text-blue-700' : 'text-gray-500'}`}>
+                        Gambar
+                      </div>
+                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                        !tanpaGambar ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {!tanpaGambar ? 'Aktif' : 'Nonaktif'}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1 font-medium leading-relaxed max-w-[220px] xs:max-w-none">
+                      {!tanpaGambar
+                        ? "Mengaktifkan format soal bergambar & ilustrasi AI otomatis."
+                        : "Format soal teks murni & numerasi tanpa gambar ilustrasi."}
+                    </div>
                   </div>
+                  
                   <div className="relative inline-block w-14 mr-0 align-middle select-none transition duration-200 ease-in flex-shrink-0">
-                    <input type="checkbox" checked={!tanpaGambar} onChange={(e) => setTanpaGambar(!e.target.checked)} className="toggle-checkbox absolute block w-7 h-7 rounded-full bg-white border-[3px] border-gray-200 appearance-none cursor-pointer shadow-sm z-10" style={{ left: !tanpaGambar ? "1.75rem" : "0", borderColor: !tanpaGambar ? "#2563eb" : "#cbd5e1", transition: "all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)" }}/>
+                    <input 
+                      type="checkbox" 
+                      checked={!tanpaGambar} 
+                      onChange={(e) => handleToggleGambar(e.target.checked)} 
+                      className="toggle-checkbox absolute block w-7 h-7 rounded-full bg-white border-[3px] border-gray-200 appearance-none cursor-pointer shadow-sm z-10" 
+                      style={{ left: !tanpaGambar ? "1.75rem" : "0", borderColor: !tanpaGambar ? "#2563eb" : "#cbd5e1", transition: "all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)" }}
+                    />
                     <div className="toggle-label block overflow-hidden h-7 rounded-full bg-gray-200 cursor-pointer" style={{ background: !tanpaGambar ? "#93c5fd" : "#e2e8f0", transition: "all 0.3s" }}></div>
                   </div>
                 </label>
+
+                {!tanpaGambar ? (
+                  <div className="flex flex-col gap-2.5 p-3.5 bg-blue-50/40 rounded-2xl border border-blue-100 animate-in fade-in-50 duration-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                        <ImageIcon className="w-3.5 h-3.5 text-blue-600" /> Model Gambar AI:
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      <label className={`flex items-center justify-between p-3 rounded-xl cursor-pointer border-2 transition-all ${imageModel === 'pollinations' ? 'border-blue-500 bg-white shadow-sm' : 'border-gray-200 bg-white/70 hover:border-gray-300'}`}>
+                        <div className="flex items-center gap-2.5">
+                          <input type="radio" name="imageModelAi" value="pollinations" checked={imageModel === "pollinations"} onChange={(e) => setImageModel(e.target.value)} className="w-4 h-4 text-blue-600 focus:ring-blue-500" />
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold text-gray-800">Pollinations AI</span>
+                            <span className="text-[10px] text-gray-400 font-medium">Cepat, ringan & stabil (Default)</span>
+                          </div>
+                        </div>
+                        <span className="text-[9px] bg-blue-100 text-blue-800 font-black px-2 py-0.5 rounded-full uppercase">Cepat</span>
+                      </label>
+
+                      <label className={`flex items-center justify-between p-3 rounded-xl cursor-pointer border-2 transition-all ${imageModel === 'flux' ? 'border-pink-500 bg-white shadow-sm' : 'border-gray-200 bg-white/70 hover:border-gray-300'}`}>
+                        <div className="flex items-center gap-2.5">
+                          <input type="radio" name="imageModelAi" value="flux" checked={imageModel === "flux"} onChange={(e) => setImageModel(e.target.value)} className="w-4 h-4 text-pink-600 focus:ring-pink-500" />
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold text-gray-800">Hugging Face FLUX.1-schnell</span>
+                            <span className="text-[10px] text-gray-400 font-medium">Black Forest Labs • Kualitas HD & Super Detil</span>
+                          </div>
+                        </div>
+                        <span className="text-[9px] bg-pink-100 text-pink-800 font-black px-2 py-0.5 rounded-full uppercase">HD Pro</span>
+                      </label>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-3 text-xs text-slate-600">
+                    <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center font-bold text-slate-700 text-base flex-shrink-0">
+                      📄
+                    </div>
+                    <div>
+                      <div className="font-bold text-slate-800 text-sm">Format Teks & Numerasi (Hemat Kuota)</div>
+                      <div className="text-slate-500 text-[11px] mt-0.5">Generator difokuskan membuat soal berbasis teks dan lembar drill hitung tanpa memproses gambar AI.</div>
+                    </div>
+                  </div>
+                )}
               </div>
+            </div>
+
+            {/* Format & Tipe Lembar Kerja (LKPD) Selector (Dynamically Filtered) */}
+            <div className="mb-8 pt-4 border-t border-gray-100">
+              <LkpdTypeSelector 
+                value={tipeSoal} 
+                onChange={handleTipeSoalChange} 
+                tanpaGambar={tanpaGambar} 
+              />
             </div>
 
             {error && (

@@ -11,6 +11,11 @@ export interface MatchingPair {
   kanan_prompt?: string;
 }
 
+export interface MathBlock {
+  judul_blok?: string;
+  items: string[];
+}
+
 export interface Soal {
   pertanyaan: string;
   jawaban_benar?: string;
@@ -21,6 +26,16 @@ export interface Soal {
   tanpa_gambar: boolean;
   image_prompt?: string;
   image_url?: string;
+  // Field LKPD baru
+  suku_kata_awal?: string;
+  pilihan_suku_kata?: string[];
+  huruf_depan?: string;
+  sisa_kata?: string;
+  opsi_kata?: string[];
+  huruf_acak?: string;
+  kata_target?: string;
+  jumlah_huruf?: number;
+  math_blocks?: MathBlock[];
 }
 
 export interface Worksheet {
@@ -38,6 +53,7 @@ export interface GenerateRequest {
   tipe_soal?: string;
   tanpa_gambar?: boolean;
   model?: string;
+  image_model?: string;
 }
 
 export async function generateWorksheet(data: GenerateRequest): Promise<{ worksheet: Worksheet; message: string }> {
@@ -83,11 +99,11 @@ export async function deleteWorksheet(id: number): Promise<void> {
   if (!res.ok) throw new Error("Gagal hapus worksheet");
 }
 
-export async function regenerateImage(imagePrompt: string): Promise<string> {
+export async function regenerateImage(imagePrompt: string, imageModel?: string): Promise<string> {
   const res = await fetch(`${API_URL}/api/regenerate-image`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image_prompt: imagePrompt }),
+    body: JSON.stringify({ image_prompt: imagePrompt, image_model: imageModel }),
   });
   if (!res.ok) throw new Error("Gagal regenerate gambar");
   const data = await res.json();
