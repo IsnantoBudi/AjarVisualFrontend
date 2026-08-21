@@ -88,11 +88,11 @@ export default function GeneratePage() {
     return (
       <>
         <NavBar />
-        <main className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ paddingTop: "80px" }}>
+        <main className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 sm:px-6 pt-[80px] pb-12">
           {/* Decorative Gamified Background while Loading */}
           <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-[#f8fafc] opacity-60" style={{ backgroundImage: "radial-gradient(#94a3b8 1.5px, transparent 1.5px)", backgroundSize: "32px 32px" }}>
-            <div className="absolute top-[20%] left-[20%] w-[500px] h-[500px] bg-blue-300 rounded-full mix-blend-multiply filter blur-[120px] opacity-40 animate-blob"></div>
-            <div className="absolute bottom-[20%] right-[20%] w-[500px] h-[500px] bg-pink-300 rounded-full mix-blend-multiply filter blur-[120px] opacity-40 animate-blob" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-[10%] left-[5%] w-[260px] sm:w-[500px] h-[260px] sm:h-[500px] bg-blue-300 rounded-full mix-blend-multiply filter blur-[60px] sm:blur-[120px] opacity-40 animate-blob"></div>
+            <div className="absolute bottom-[10%] right-[5%] w-[260px] sm:w-[500px] h-[260px] sm:h-[500px] bg-pink-300 rounded-full mix-blend-multiply filter blur-[60px] sm:blur-[120px] opacity-40 animate-blob" style={{ animationDelay: '2s' }}></div>
           </div>
           <ProgressBloom message={`Serahkan pada AjarVisual, Sedang menyihir soal "${topik}"...`} />
         </main>
